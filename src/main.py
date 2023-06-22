@@ -3,7 +3,6 @@ import re
 from urllib.parse import urljoin
 
 import requests_cache
-from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
@@ -12,7 +11,7 @@ from constants import (
 )
 from outputs import control_output
 from exceptions import ParserFindTagException
-from utils import find_tag, get_response, make_soup
+from utils import find_tag, make_soup
 
 
 def pep(session):
@@ -29,12 +28,8 @@ def pep(session):
         pep_link_short = find_tag(tr_tag, 'a')['href']
         status_short = status.text[1:]
         status_full = EXPECTED_STATUS[status_short]
-
         pep_link = urljoin(PEPS_PYTHON_URL, pep_link_short)
-        response = get_response(session, pep_link)
-        if response is None:
-            return
-        soup_status = BeautifulSoup(response.text, features='lxml')
+        soup_status = make_soup(session, pep_link)
         pep_status_in_pep_page = find_tag(soup_status, 'abbr').text
         if pep_status_in_pep_page not in status_full:
             logging.info(
@@ -61,10 +56,7 @@ def whats_new(session):
         version_a_tag = section.find('a')
         href = version_a_tag['href']
         version_link = urljoin(whats_new_url, href)
-        response = get_response(session, version_link)
-        if response is None:
-            continue
-        soup = BeautifulSoup(response.text, features='lxml')
+        soup = make_soup(session, version_link)
         h1 = find_tag(soup, 'h1')
         dl = find_tag(soup, 'dl')
         dl_text = dl.text.replace('\n', ' ')
