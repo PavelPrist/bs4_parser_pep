@@ -1,6 +1,7 @@
 import logging
 
 from bs4 import BeautifulSoup
+from http import HTTPStatus
 from requests import RequestException
 
 from constants import EMPTY_RESPONSE
@@ -30,7 +31,7 @@ def find_tag(soup, tag, attrs=None):
 
 def make_soup(session, url):
     response = get_response(session, url)
-    if response is None or response.status_code == 404:
+    if response is None or response.status_code == HTTPStatus.NOT_FOUND:
         logging.error(EMPTY_RESPONSE.format(url=url))
         raise ParserFindTagException(EMPTY_RESPONSE.format(url=url))
     soup = BeautifulSoup(response.text, features='lxml')
